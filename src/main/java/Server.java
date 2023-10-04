@@ -8,10 +8,7 @@ import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,7 +21,7 @@ public class Server {
     private final static ExecutorService executorService = Executors.newFixedThreadPool(64);
 
     public void start(int port) {
-            executorService.execute(() -> {
+            executorService.submit(() -> {
                 try (final ServerSocket serverSocket = new ServerSocket(port)) {
                     while (true) {
                         Server.connectProcess(serverSocket);
@@ -46,21 +43,23 @@ public class Server {
 
                     // read only request line for simplicity
                     // must be in form GET /path HTTP/1.1
-                    StringBuffer requests = new StringBuffer();
+                    final var requestLine = in.readLine();
+                    if (requestLine == null) return;
+
+
+
+                    StringBuilder requests = new StringBuilder();
                     String s;
-                    while ((s = in.readLine()) != null) {
-                        assert false;
+                    while (!Objects.equals(s = in.readLine(), "")) {
                         requests.append(s).append("\n");
                     }
-
                     System.out.println(requests);
 
                     final String[] lines = requests.toString().split("\n");
 
-                    System.out.println(Arrays.toString(lines));
 
-                    final var requestLine = lines[0];
-                    if (requestLine == null) return;
+
+
 
 
 
@@ -129,6 +128,8 @@ public class Server {
                     ).getBytes());
                     Files.copy(filePath, out);
                     out.flush();
+
+                    System.out.println("Файл отправлен!");
 
                 } catch (IOException e) {
                     e.printStackTrace();
