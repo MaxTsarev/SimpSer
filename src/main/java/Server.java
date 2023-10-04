@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,12 +46,23 @@ public class Server {
 
                     // read only request line for simplicity
                     // must be in form GET /path HTTP/1.1
-                    final var requestLine = in.readLine();
+                    StringBuffer requests = new StringBuffer();
+                    String s;
+                    while ((s = in.readLine()) != null) {
+                        assert false;
+                        requests.append(s).append("\n");
+                    }
+
+                    System.out.println(requests);
+
+                    final String[] lines = requests.toString().split("\n");
+
+                    System.out.println(Arrays.toString(lines));
+
+                    final var requestLine = lines[0];
                     if (requestLine == null) return;
-//                    String s;
-//                    while ((s = in.readLine()) != null) {
-//                        System.out.println(s);
-//                    }
+
+
 
 
 
