@@ -20,7 +20,7 @@ public interface Handler {
             Files.copy(filePath, responseStream);
             responseStream.flush();
 
-        }  catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

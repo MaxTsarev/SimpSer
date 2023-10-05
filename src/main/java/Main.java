@@ -6,10 +6,9 @@ import java.time.LocalDateTime;
 
 public class Main {
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         final var server = new Server();
-//         код инициализации сервера (из вашего предыдущего ДЗ)
-//
+
 //         добавление хендлеров (обработчиков)
         server.addHandler("GET", "/messages", new Handler() {
             public void handle(Request request, BufferedOutputStream responseStream) {
@@ -27,6 +26,7 @@ public class Main {
                 }
             }
         });
+
         server.addHandler("POST", "/messages", new Handler() {
             public void handle(Request request, BufferedOutputStream responseStream) {
                 // TODO: handlers code
@@ -43,6 +43,7 @@ public class Main {
                 }
             }
         });
+
         server.addHandler("GET", "/classic.html", new Handler() {
             @Override
             public void handle(Request request, BufferedOutputStream responseStream) {
@@ -70,16 +71,28 @@ public class Main {
             }
         });
 
-        server.addHandler("GET", "/event.html", new Handler() {});
-        server.addHandler("GET", "/form.html", new Handler() {});
-        server.addHandler("GET", "/forms.html", new Handler() {});
-        server.addHandler("GET", "/index.html", new Handler() {});
-        server.addHandler("GET", "/links.html", new Handler() {});
-        server.addHandler("GET", "/resources.html", new Handler() {});
-        server.addHandler("GET", "/spring.png", new Handler() {});
-        server.addHandler("GET", "/spring.svg", new Handler() {});
-
-
+        server.addHandler("GET", "/events.html", new Handler() {
+        });
+        server.addHandler("GET", "/form.html", new Handler() {
+        });
+        server.addHandler("GET", "/forms.html", new Handler() {
+        });
+        server.addHandler("GET", "/index.html", new Handler() {
+        });
+        server.addHandler("GET", "/links.html", new Handler() {
+        });
+        server.addHandler("GET", "/resources.html", new Handler() {
+        });
+        server.addHandler("GET", "/spring.png", new Handler() {
+        });
+        server.addHandler("GET", "/spring.svg", new Handler() {
+        });
+        server.addHandler("GET", "/app.js", new Handler() {
+        });
+        server.addHandler("GET", "/events.js", new Handler() {
+        });
+        server.addHandler("GET", "/styles.css", new Handler() {
+        });
 
         server.start(9999);
     }
