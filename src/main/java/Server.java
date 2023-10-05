@@ -1,5 +1,3 @@
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +14,7 @@ public class Server {
 
     private static Map<String, Map<String, Handler>> handlers = new HashMap<>();
 
-    private final static List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html", "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js");
+//    private final static List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html", "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js", "/form.html");
 
     private final static ExecutorService executorService = Executors.newFixedThreadPool(64);
 
@@ -46,25 +44,13 @@ public class Server {
                     final var requestLine = in.readLine();
                     if (requestLine == null) return;
 
-
-
                     StringBuilder requests = new StringBuilder();
                     String s;
                     while (!Objects.equals(s = in.readLine(), "")) {
                         requests.append(s).append("\n");
                     }
-                    System.out.println(requests);
 
                     final String[] lines = requests.toString().split("\n");
-
-
-
-
-
-
-
-
-
 
                     System.out.println("Соединение установлено!");
                     final var parts = requestLine.split(" ");
@@ -74,74 +60,97 @@ public class Server {
                         return;
                     }
 
-                    Request request = new Request(parts[0], parts[1]);
-                    final var path = parts[1];
-                    if (!validPaths.contains(path)) {
-                        if (handlers.containsKey(parts[0])) {
-                            if (handlers.get(parts[0]).containsKey(parts[1])) {
-                                Handler handler = handlers.get(parts[0]).get(parts[1]);
-                                handler.handle(request, out);
-                                out.write((in).read());
-                                out.flush();
-                                return;
+                    Request request = new Request(parts[0], parts[1], lines);
+
+
+
+
+
+                    if (handlers.get(parts[0]).containsKey(parts[1])) {
+                        Handler handler = new Handler() {
+                            @Override
+                            public void handle(Request request, BufferedOutputStream responseStream) {
+                                Handler.super.handle(request, responseStream);
                             }
-                        }
-                        out.write((
-                                "HTTP/1.1 404 Not Found\r\n" +
-                                        "Content-Length: 0\r\n" +
-                                        "Connection: close\r\n" +
-                                        "\r\n"
-                        ).getBytes());
-                        out.flush();
+                        };
+                        handler.handle(request, out);
                         return;
                     }
 
-                    final var filePath = Path.of(".", "public", path);
-                    final var mimeType = Files.probeContentType(filePath);
-
-                    // special case for classic
-                    if (path.equals("/classic.html")) {
-                        final var template = Files.readString(filePath);
-                        final var content = template.replace(
-                                "{time}",
-                                LocalDateTime.now().toString()
-                        ).getBytes();
-                        out.write((
-                                "HTTP/1.1 200 OK\r\n" +
-                                        "Content-Type: " + mimeType + "\r\n" +
-                                        "Content-Length: " + content.length + "\r\n" +
-                                        "Connection: close\r\n" +
-                                        "\r\n"
-                        ).getBytes());
-                        out.write(content);
-                        out.flush();
-                        return;
-                    }
-
-                    final var length = Files.size(filePath);
                     out.write((
-                            "HTTP/1.1 200 OK\r\n" +
-                                    "Content-Type: " + mimeType + "\r\n" +
-                                    "Content-Length: " + length + "\r\n" +
+                            "HTTP/1.1 404 Not Found\r\n" +
+                                    "Content-Length: 0\r\n" +
                                     "Connection: close\r\n" +
                                     "\r\n"
                     ).getBytes());
-                    Files.copy(filePath, out);
                     out.flush();
 
-                    System.out.println("Файл отправлен!");
 
+//                    final var path = parts[1];
+//                    if (!validPaths.contains(path)) {
+//                        if (handlers.containsKey(parts[0])) {
+//                            if (handlers.get(parts[0]).containsKey(parts[1])) {
+//                                Handler handler = handlers.get(parts[0]).get(parts[1]);
+//                                handler.handle(request, out);
+//                                out.write((in).read());
+//                                out.flush();
+//                                return;
+//                            }
+//                        }
+//                        out.write((
+//                                "HTTP/1.1 404 Not Found\r\n" +
+//                                        "Content-Length: 0\r\n" +
+//                                        "Connection: close\r\n" +
+//                                        "\r\n"
+//                        ).getBytes());
+//                        out.flush();
+//                        return;
+//                    }
+
+//                    final var filePath = Path.of(".", "public", path);
+//                    final var mimeType = Files.probeContentType(filePath);
+//
+//                    // special case for classic
+//                    if (path.equals("/classic.html")) {
+//                        final var template = Files.readString(filePath);
+//                        final var content = template.replace(
+//                                "{time}",
+//                                LocalDateTime.now().toString()
+//                        ).getBytes();
+//                        out.write((
+//                                "HTTP/1.1 200 OK\r\n" +
+//                                        "Content-Type: " + mimeType + "\r\n" +
+//                                        "Content-Length: " + content.length + "\r\n" +
+//                                        "Connection: close\r\n" +
+//                                        "\r\n"
+//                        ).getBytes());
+//                        out.write(content);
+//                        out.flush();
+//                        return;
+//                    }
+//
+//                    final var length = Files.size(filePath);
+//                    out.write((
+//                            "HTTP/1.1 200 OK\r\n" +
+//                                    "Content-Type: " + mimeType + "\r\n" +
+//                                    "Content-Length: " + length + "\r\n" +
+//                                    "Connection: close\r\n" +
+//                                    "\r\n"
+//                    ).getBytes());
+//                    Files.copy(filePath, out);
+//                    out.flush();
+//
+//                    System.out.println("Файл отправлен!");
+//
                 } catch (IOException e) {
                     e.printStackTrace();
-            }
+                }
         }
 
 
 
 
     public void addHandler(String request, String messages, Handler handler) {
-
-//        handlers.put(request, value);
         if (!handlers.containsKey(request)) {
             Map<String, Handler> value = new HashMap<>();
             value.put(messages, handler);
