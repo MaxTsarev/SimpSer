@@ -1,9 +1,18 @@
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 public class Request {
 
     private String requestMethod;
     private String path;
     private String[] headers;
     private String body;
+
+    public Request() {
+    }
 
 
     public Request(String requestMethod, String path, String[] headers, String body) {
@@ -33,5 +42,23 @@ public class Request {
 
     public String getBody() {
         return body;
+    }
+
+    public void getQueryParam(String name) {
+        List<NameValuePair> list = URLEncodedUtils.parse(name, StandardCharsets.UTF_8, '/', '?', '&', ';');
+        if (list.isEmpty()) return;
+        for (NameValuePair nameValuePair : list) {
+            if (nameValuePair.getValue() == null) return;
+            System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
+        }
+    }
+
+    public void getQueryParams() {
+        List<NameValuePair> list = URLEncodedUtils.parse(this.path, StandardCharsets.UTF_8, '/', '?', '&', ';');
+        if (list.isEmpty()) return;
+        for (NameValuePair nameValuePair : list) {
+            if (nameValuePair.getValue() == null) return;
+            System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
+        }
     }
 }

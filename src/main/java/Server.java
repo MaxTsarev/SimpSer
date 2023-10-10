@@ -1,8 +1,7 @@
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,20 +55,27 @@ public class Server {
             }
 
             Request request = new Request(parts[0], parts[1], lines);
-
+            request.getQueryParams();
+            request.getQueryParam(request.getPath());
 
             if (handlers.get(parts[0]).containsKey(parts[1])) {
                 Handler handler = handlers.get(parts[0]).get(parts[1]);
                 handler.handle(request, out);
+
                 return;
             }
 
+            final var filePath = Path.of(".", "public", "/notFound.html");
+            final var mimeType = Files.probeContentType(filePath);
+            final var length = Files.size(filePath);
             out.write((
-                    "HTTP/1.1 404 Not Found\r\n" +
-                            "Content-Length: 0\r\n" +
+                    "HTTP/1.1 300 Redirection\r\n" +
+                            "Content-Type: " + mimeType + "\r\n" +
+                            "Content-Length: " + length + "\r\n" +
                             "Connection: close\r\n" +
                             "\r\n"
             ).getBytes());
+            Files.copy(filePath, out);
             out.flush();
 
         } catch (IOException e) {
@@ -87,4 +93,5 @@ public class Server {
         }
         handlers.get(request).put(messages, handler);
     }
+
 }
