@@ -47,16 +47,23 @@ public class Server {
             final String[] lines = requests.toString().split("\n");
 
             System.out.println("Соединение установлено!");
-            final var parts = requestLine.split(" ");
+            var parts = requestLine.split(" ");
 
             if (parts.length != 3) {
                 // just close socket
                 return;
             }
 
-            Request request = new Request(parts[0], parts[1], lines);
+            int value = parts[1].indexOf("?");
+            String withoutQueryStr = null;
+            if (value != -1) {
+                withoutQueryStr = parts[1].substring(value);
+                parts[1] = parts[1].substring(0, value);
+            }
+
+            Request request = new Request(parts[0], parts[1], withoutQueryStr, lines);
             request.getQueryParams();
-            request.getQueryParam(request.getPath());
+            request.getQueryParam("image");
 
             if (handlers.get(parts[0]).containsKey(parts[1])) {
                 Handler handler = handlers.get(parts[0]).get(parts[1]);

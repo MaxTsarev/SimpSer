@@ -8,6 +8,7 @@ public class Request {
 
     private String requestMethod;
     private String path;
+    private String queryParam;
     private String[] headers;
     private String body;
 
@@ -22,10 +23,12 @@ public class Request {
         this.body = body;
     }
 
-    public Request(String requestMethod, String path, String[] headers) {
+    public Request(String requestMethod, String path, String queryParam, String[] headers) {
         this.requestMethod = requestMethod;
-        this.headers = headers;
         this.path = path;
+        this.queryParam = queryParam;
+        this.headers = headers;
+
     }
 
     public String getRequestMethod() {
@@ -44,20 +47,30 @@ public class Request {
         return body;
     }
 
+    public String getQueryParamOne() {
+        return queryParam;
+    }
+
     public void getQueryParam(String name) {
-        List<NameValuePair> list = URLEncodedUtils.parse(name, StandardCharsets.UTF_8, '/', '?', '&', ';');
+        if (this.queryParam == null) {
+            System.out.println("QueryString is empty!");
+        }
+        List<NameValuePair> list = URLEncodedUtils.parse(this.queryParam, StandardCharsets.UTF_8, '/', '?', '&', ';');
         if (list.isEmpty()) return;
         for (NameValuePair nameValuePair : list) {
-            if (nameValuePair.getValue() == null) return;
-            System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
+            if (nameValuePair.getValue() == null) continue;
+            if (nameValuePair.getName().equals(name)) {
+                System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
+            }
         }
     }
 
     public void getQueryParams() {
-        List<NameValuePair> list = URLEncodedUtils.parse(this.path, StandardCharsets.UTF_8, '/', '?', '&', ';');
+        if (this.queryParam == null) return;
+        List<NameValuePair> list = URLEncodedUtils.parse(this.queryParam, StandardCharsets.UTF_8, '/', '?', '&', ';');
         if (list.isEmpty()) return;
         for (NameValuePair nameValuePair : list) {
-            if (nameValuePair.getValue() == null) return;
+            if (nameValuePair.getValue() == null) continue;
             System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
         }
     }
