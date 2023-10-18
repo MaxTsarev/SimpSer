@@ -13,7 +13,7 @@ public class Server {
     private final static ExecutorService executorService = Executors.newFixedThreadPool(64);
 
     public void start(int port) {
-        executorService.execute(() -> {
+        executorService.submit(() -> {
             try (final ServerSocket serverSocket = new ServerSocket(port)) {
                 while (true) {
                     Server.connectProcess(serverSocket);
@@ -33,42 +33,51 @@ public class Server {
                 final var out = new BufferedOutputStream(socket.getOutputStream());
         ) {
 
-            // read only request line for simplicity
-            // must be in form GET /path HTTP/1.1
-            final var requestLine = in.readLine();
+            String requestLine;
+            String[] headers;
+            String requestMethod;
+            String path;
+            String queryString = null;
+            String body = null;
+
+
+            requestLine = in.readLine();
             if (requestLine == null) return;
 
-            StringBuilder requests = new StringBuilder();
-            String s;
-            while (!Objects.equals(s = in.readLine(), "")) {
-                requests.append(s).append("\n");
+            headers = headersParse(in);
+
+            if (ifContentTypeIsXWwwFormUrlencoded(headers)) {
+                body = xWwwFormUrlencodedBodyParser(in);
             }
 
-            final String[] lines = requests.toString().split("\n");
-
             System.out.println("Соединение установлено!");
-            var parts = requestLine.split(" ");
 
+
+            var parts = requestLine.split(" ");
             if (parts.length != 3) {
-                // just close socket
                 return;
             }
 
+            requestMethod = parts[0];
+
+
             int value = parts[1].indexOf("?");
-            String withoutQueryStr = null;
             if (value != -1) {
-                withoutQueryStr = parts[1].substring(value);
+                queryString = parts[1].substring(value);
                 parts[1] = parts[1].substring(0, value);
             }
 
-            Request request = new Request(parts[0], parts[1], withoutQueryStr, lines);
+            path = parts[1];
+
+            Request request = new Request(requestMethod, path, queryString, headers, body);
             request.getQueryParams();
             request.getQueryParam("image");
+            request.getPostParams();
+            request.getPostParam("value");
 
             if (handlers.get(parts[0]).containsKey(parts[1])) {
                 Handler handler = handlers.get(parts[0]).get(parts[1]);
                 handler.handle(request, out);
-
                 return;
             }
 
@@ -101,4 +110,38 @@ public class Server {
         handlers.get(request).put(messages, handler);
     }
 
+    private static String xWwwFormUrlencodedBodyParser(BufferedReader in) throws IOException {
+        StringBuilder body = new StringBuilder();
+        char w;
+        char[] ch = new char[200];
+        if (!in.ready()) {
+            return null;
+        }
+        int len = in.read(ch);
+        for (int i = 0; i < len; i++) {
+            w = ch[i];
+            body.append(w);
+        }
+        return body.toString();
+    }
+
+    private static boolean ifContentTypeIsXWwwFormUrlencoded(String[] lines) {
+        for (String result : lines) {
+            String[] header = result.split(":");
+            if (header[0].equals("Content-Type") && header[1].equals(" application/x-www-form-urlencoded")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String[] headersParse(BufferedReader in) throws IOException {
+        String[] result;
+        StringBuilder requestHeaders = new StringBuilder();
+        String s;
+        while (!(s = in.readLine()).equals("")) {
+            requestHeaders.append(s).append("\n");
+        }
+        return result = requestHeaders.toString().split("\n");
+    }
 }

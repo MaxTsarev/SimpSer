@@ -23,11 +23,12 @@ public class Request {
         this.body = body;
     }
 
-    public Request(String requestMethod, String path, String queryParam, String[] headers) {
+    public Request(String requestMethod, String path, String queryParam, String[] headers, String body) {
         this.requestMethod = requestMethod;
         this.path = path;
         this.queryParam = queryParam;
         this.headers = headers;
+        this.body = body;
 
     }
 
@@ -71,6 +72,22 @@ public class Request {
         if (list.isEmpty()) return;
         for (NameValuePair nameValuePair : list) {
             if (nameValuePair.getValue() == null) continue;
+            System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
+        }
+    }
+
+    public void getPostParam(String name) {
+        List<NameValuePair> list = URLEncodedUtils.parse(this.body, StandardCharsets.UTF_8);
+        for (NameValuePair nameValuePair : list) {
+            if (nameValuePair.getName().equals(name)) {
+                System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
+            }
+        }
+    }
+
+    public void getPostParams() {
+        List<NameValuePair> list = URLEncodedUtils.parse(this.body, StandardCharsets.UTF_8);
+        for (NameValuePair nameValuePair : list) {
             System.out.println(nameValuePair.getName() + ":" + nameValuePair.getValue());
         }
     }

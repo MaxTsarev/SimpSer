@@ -122,6 +122,32 @@ public class Main {
             }
         });
 
+        server.addHandler("POST", "/default-get.html", new Handler() {
+            @Override
+            public void handle(Request request, BufferedOutputStream responseStream) {
+                try {
+
+                    final var filePath = Path.of(".", "public", request.getPath());
+                    final var mimeType = Files.probeContentType(filePath);
+                    final var length = Files.size(filePath);
+                    responseStream.write((
+                            "HTTP/1.1 200 OK\r\n" +
+                                    "Content-Type: " + mimeType + "\r\n" +
+                                    "Content-Length: " + length + "\r\n" +
+                                    "Connection: close\r\n" +
+                                    "\r\n"
+                    ).getBytes());
+                    Files.copy(filePath, responseStream);
+                    responseStream.flush();
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
         server.start(9999);
     }
 }
